@@ -48,7 +48,7 @@ available online. We encourage you to research other resources as well.
 ### Create Repository
 
 To create a repository for the class, first login at UIUC's Github at https://github-dev.cs.illinois.edu.
-Next, visit <REPLACE_ME> to create a repository for this class. 
+Next, visit https://edu.cs.illinois.edu/create-ghe-repo/ece220fa19/ to create a repository for this class. 
 Now, if you navigate to https://github-dev.cs.illinois.edu/ECE220FA19, you will see a repository under your NetID. 
 Click on your NetID and you will be shown a page that shows the contents of your repository. 
 Initially, this repository will be empty but don't worry about that because it will be populated soon.
