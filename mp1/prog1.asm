@@ -98,13 +98,91 @@ GET_NEXT
 
 PRINT_HIST
 
-; you will need to insert your code to print the histogram here
+; Anna Miller (annam4)
+; 9/5/19
+; ECE 220
+; BD2
 
-; do not forget to write a brief description of the approach/algorithm
-; for your implementation, list registers used in this part of the code,
-; and provide sufficient comments
+; Partners: aairab2, daviday2
 
+; This program will go through and print the histogram stored starting at x3F00.
+; Each character is printed on a different line along with the number of times that
+; character appears in a string. The character count is printed in hex.
+; That hex value will be determined by reading the current value of the histogram
+; starting at the MSB and copying the information over to R0 one bit at a time. To get 
+; the next bit of the hex digit, the value R0 will undergo a left shift. The MSB of the
+; original value will be added to the value in R0, and the original value will undergo 
+; a left shift. This will continue until all 4 hex digits (all 16 bits) have been copied to R0.
 
+; Register Table
+; R0 - holds ASCII value to be printed from OUT
+; R1 - pointer to start of histogram
+; R2 - holds current character of histogram
+; R3 - holds current value of histogram
+; R4 - temporary register (additive inverse of Z, differences for counters, offsets, etc.)
+; R5 - hex digit counter
+; R6 - bit counter
+			
+			AND R0, R0, #0		; initialize R0 to 0
+			LD R1, HIST_ADDR	; set R1 to starting address of histogram
+			LD R2, CHAR				; set R2 to ASCII of first character counted
+			AND R3, R3, #0    ; initialize R3 to 0
+			AND R4, R4, #0		; initialize R4 to 0
+
+CHECK_CHAR
+			LD R4, NEG_Z			; set R4 to additive inverse of ASCII 'Z'
+			ADD R0, R2, #0		; set R0 to current character of histogram (R2)
+			ADD R4, R0, R4		; subtract 'Z' from R0 to check if all characters were printed
+			BRp DONE					; if the difference is positive, end program
+		
+		  OUT								; print character in R0
+			LD R0, SPACE			; set R0 to the space character
+			OUT								; print ' '
+
+			LDR R3, R1, #0    ; set R3 to current value in histogram
+
+			AND R5, R5, #0    ; set R5 (digit counter) to 0
+CHECK_DIG
+			ADD R4, R5, #-4		; check if 4 hex digits printed
+			BRzp NXT_CHAR     ; if all hex digits printed, go to next character
+			AND R0, R0, #0    ; set R0 to 0
+			
+			AND R6, R6, #0		; set R6 (bit counter) to 0
+CHECK_BIT
+			ADD R4, R6, #-4   ; check if 4 bits of the hex digit have been read
+			BRzp PRE_PRINT    ; if all bits read, prepare to print
+
+			ADD R0, R0, R0    ; left-shift the value in R0
+			ADD R3, R3, #0		; check if R3 holds a negative value
+			BRzp ZERO_BIT     ; if not negative, move on to next bit
+			ADD R0, R0, #1    ; if negative, MSB of R3 is #1, so add #1 to R0
+	
+ZERO_BIT
+			ADD R3, R3, R3		; left-shift the value in R3
+			ADD R6, R6, #1		; increment bit counter
+			BR CHECK_BIT			; unconditional branch to check if all bits read
+
+PRE_PRINT
+			ADD R4, R0, #-9		; subtract #9 from R0 to determine if value is a numerical hex digit
+			BRnz PRINT_NUM		; if difference in R4 is less than or equal to 0, hex digit is 0-9
+			LD R0, CHAR				; if hex digit is A-F, load hex offset for ASCII value of letter into R0
+			BR PRINT					; unconditional branch to PRINT
+
+PRINT_NUM
+			LD R4, NUM				; if hex digit is 0-9, load hex offset for ASCII value of number into R4
+
+PRINT ADD R0, R0, R4    ; Add the hex offset to get the ASCII value for the appropriate hex character
+			OUT
+			ADD R5, R5, #1		; increment digit counter
+			BR CHECK_DIG			; unconditional branch to check if all hex digits printed
+
+NXT_CHAR
+			LD R0, NEWLINE		; load the newline character to R0
+			OUT								; print newline
+
+			ADD R1, R1, #1		; increment histogram pointer address for next character
+			ADD R2, R2, #1		; increment ASCII value of R2 to get next character
+			BR CHECK_CHAR			; unconditional branch to beginning of program
 
 DONE	HALT			; done
 
@@ -114,8 +192,15 @@ NUM_BINS	.FILL #27	; 27 loop iterations
 NEG_AT		.FILL xFFC0	; the additive inverse of ASCII '@'
 AT_MIN_Z	.FILL xFFE6	; the difference between ASCII '@' and 'Z'
 AT_MIN_BQ	.FILL xFFE0	; the difference between ASCII '@' and '`'
-HIST_ADDR	.FILL x3F00     ; histogram starting address
+HIST_ADDR	.FILL x3F00 ; histogram starting address
 STR_START	.FILL x4000	; string starting address
+
+; the data for printing histogram
+CHAR			.FILL x0040 ; the ASCII value of '@'
+SPACE			.FILL x0020 ; the ASCII value of ' '
+NEWLINE   .FILL x000A ; the ASCII value of newline character
+NEG_Z     .FILL xFFA6 ; the additive inverse of ASCII value of 'Z'
+NUM				.FILL x0030 ; the difference between a number and its ASCII hex value
 
 ; for testing, you can use the lines below to include the string in this
 ; program...
