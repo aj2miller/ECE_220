@@ -165,6 +165,8 @@ int solve_sudoku(int sudoku[9][9]) {
       for(j = 0; j < 9; j++){
         // if an empty cell is found break the inner loop
         if(sudoku[i][j] == 0){
+          row = i;  // save index of the empty cell row
+          col = j;  // save index of the empty cell column
           found = 1;  // flag indicates an empty space has been found
           break;
         }
@@ -179,8 +181,8 @@ int solve_sudoku(int sudoku[9][9]) {
   // check each value 1-9 until finding one that or can be placed in the empty cell, or 9 is reached
   for(val = 1; val <= 9; val++){
     // if there are no conflicts, set the cell to the value
-    if(is_val_valid(val, i, j, sudoku)){
-      sudoku[i][j] = val;
+    if(is_val_valid(val, row, col, sudoku)){
+      sudoku[row][col] = val;
 
       // backtracking: function calls itself to try to fill the next empty cell
       // if the call returns true, the board has been completed
@@ -188,7 +190,7 @@ int solve_sudoku(int sudoku[9][9]) {
         return true;
       }
       // otherwise, set the cell back to 0 and try the next value
-      sudoku[i][j] = 0;
+      sudoku[row][col] = 0;
     }
   }
 
