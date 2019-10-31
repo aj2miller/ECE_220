@@ -505,8 +505,14 @@ int legal_move_check(game * cur_game)
     // try each movement on the copy
     if(move_w(game_copy) == 0 && move_d(game_copy) == 0 && move_a(game_copy) == 0 && move_s(game_copy) == 0){
       // if all movements return 0, there are no legal movements left
-      return 0;
+      // free memory spcae alloocated to the copy
+			free(game_copy->cells);
+			free(game_copy);
+			return 0;
     }
+		// free memory space allocated to the copy
+		free(game_copy->cells);
+		free(game_copy);
     return 1;
 }
 
